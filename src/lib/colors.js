@@ -1,19 +1,26 @@
 import React from "react"
 
-const types = {
-    none: 0,
-    success: 1,
-    action: 2,
-    secondary: 3
-}
+const button = {
+    // Colors
+    action: {
+        bgColor: "bg-blue-600 hover:bg-blue-700",
+        textColor: "text-white",
+        focusColor: "focus:ring-bg-blue-500"
+    },
+    success: {
+        bgColor: "bg-green-600 hover:bg-green-700",
+        textColor: "text-white",
+        focusColor: "focus:ring-bg-green-500"
+    },
+    secondary: {
+        bgColor: "bg-gray-600 hover:bg-gray-700",
+        textColor: "text-white",
+        focusColor: "focus:ring-bg-gray-500"
+    },
+    // Sizes
+    small: 'px-3 py-2',
+    medium: 'px-4 py-2',
+    large: 'px-5 py-2',
+};
 
-const getBgColor = (type) => {
-    switch (type) {
-        case types.success: return "bg-green"
-        case types.action: return "bg-blue"
-        case types.secondary: return "bg-gray"
-        default: return ""
-    }
-}
-
-export default { types, getBgColor }
+export default { button }

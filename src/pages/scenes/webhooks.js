@@ -376,7 +376,7 @@ const WebhooksPage = () => {
     <div>
       {/* <Nav /> */}
       <div className="flex flex-row justify-between w-full">
-        <content className="container mx-auto px-10">
+        <div className="container mx-auto px-10">
           {/* <div className="lg:flex lg:items-center lg:justify-between"> */}
           <div className="flex items-center justify-between">
             <div className="flex-1 min-w-0 py-20">
@@ -387,11 +387,11 @@ const WebhooksPage = () => {
             </div>
             <div className="mt-5 flex lg:mt-0 lg:ml-4">
               <Dropdown title={selectedWorkspace.gid ? selectedWorkspace.name : "Workspaces"} items={getWorkspacesNames()} action={(workspace) => { selectWorkspace(workspace) }} />
-              <Button color={colors.types.action} text="Reload" icon="reload" action={() => getWebhooks()} />
+              <Button type={colors.button.action} text="Reload" icon="reload" action={() => getWebhooks()} />
               {!addPanel && (
-                <Button color={colors.types.success} text="Add" icon="add" action={() => toggleAddPanel()} />
+                <Button type={colors.button.success} text="Add" icon="add" action={() => toggleAddPanel()} />
               )}
-              <Button color={colors.types.secondary} text="Log out" icon="logout" action={() => logOut()} />
+              <Button type={colors.button.secondary} text="Log out" icon="logout" action={() => logOut()} />
             </div>
           </div>
           <div className="flex flex-col">
@@ -429,12 +429,12 @@ const WebhooksPage = () => {
               </div>
             </div>
           </div>
-        </content>
+        </div>
         {addPanel && (
           <aside className="bg-white shadow-md z-40 px-10 py-20 w-1/2 min-h-screen flex flex-col">
             <div className="flex justify-between py-3">
               <div className="">
-                <Button text="Close" icon="close" action={() => toggleAddPanel()} />
+                <Button type={colors.button.secondary} text="Close" icon="close" action={() => toggleAddPanel()} />
               </div>
               <p className="my-2 flex text-base font-medium text-gray-500">
                 Create a new webhook
@@ -456,7 +456,7 @@ const WebhooksPage = () => {
             </div>
             <div className="flex items-center justify-between mt-10">
               {renderMessage(newWebhookStatus)}
-              <Button color={colors.types.success} text="Create" icon="check" action={() => addWebhook()} />
+              <Button type={colors.button.success} text="Create" icon="check" action={() => addWebhook()} />
             </div>
           </aside>
         )}
@@ -464,7 +464,7 @@ const WebhooksPage = () => {
           <aside className="bg-white shadow-md z-40 px-10 py-20 w-1/2 min-h-screen flex flex-col">
             <div className="flex justify-between py-3">
               <div className="">
-                <Button text="Close" icon="close" action={() => toggleWebhookPanel()} />
+                <Button type={colors.button.secondary} text="Close" icon="close" action={() => toggleWebhookPanel()} />
               </div>
               <p className="my-2 flex text-base font-medium text-gray-500">
                 Webhook {selectedWebhook.gid}

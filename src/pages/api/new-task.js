@@ -1,7 +1,7 @@
 import Status from 'http-status-codes';
-import endpoints from "../../utils/asana/endpoints"
+import endpoints from "/src/lib/asana/endpoints"
 import axios from "axios"
-import parser from "../../utils/asana/parser"
+import parser from "/src/lib/asana/parser"
 
 module.exports = async (req, res) => {
 
