@@ -23,4 +23,18 @@ const button = {
     large: 'px-5 py-2',
 };
 
-export default { button }
+const message = {
+    // Colors
+    active: {
+        textColor: "text-blue-400"
+    },
+    completed: {
+        textColor: "text-green-400"
+    },
+    error: {
+        textColor: "text-red-400"
+    }
+    // default: pink
+};
+
+export default { button, message }

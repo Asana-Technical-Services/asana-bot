@@ -22,5 +22,3 @@ module.exports = async (req, res) => {
     }
     res.send("🤖 at work *beep!*")
 }
-
-//f60f727d088e92587ba2b1736874c2a0

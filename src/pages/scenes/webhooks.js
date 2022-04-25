@@ -8,8 +8,8 @@ import Dropdown from "/src/components/dropdown"
 import Icon from "/src/components/icon"
 import axios from 'axios'
 import useUser from "/src/lib/useUser";
-import fetchJson from "/src/lib/fetchJson"
 import { useRouter } from "next/router";
+import fetchJson, { FetchError } from "/src/lib/fetchJson"
 
 const sampleWebhook = {
   "data": {
@@ -41,6 +41,8 @@ const WebhooksPage = () => {
   const { user, mutateUser } = useUser();
   const router = useRouter();
   const [workspaces, setWorkspaces] = useState([])
+  // useEffect(() => {
+  // }, [workspaces]);
   const [selectedWorkspace, setSelectedWorkspace] = useState({})
   useEffect(() => {
     if (selectedWorkspace.gid) {
@@ -85,32 +87,34 @@ const WebhooksPage = () => {
       message: "Creating webhook"
     })
     newWebhook.data.target = newWebhook.data.target + "?id=jha2j"
-    axios({
+    let body = {
+      user: "TMP",
+      endpoint: "webhooks",
       method: "POST",
-      url: "https://app.asana.com/api/1.0/webhooks",
-      headers: {
-        Authorization: process.env.NEXT_PUBLIC_ASANA_TOKEN,
-        "Content-Type": "application/json; charset=utf-8",
-      },
+      params: {},
       data: newWebhook
+    }
+    fetchJson("api/asana", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
     }).then(res => {
-      if (res.status === 201) {
+      if (res.error) {
+        setMessageStatus({
+          value: status.values.error,
+          message: res.error
+        })
+        setNewWebhookStatus({
+          value: status.values.completed,
+          message: " webhook not created"
+        })
+      } else {
         setNewWebhookStatus({
           value: status.values.completed,
           message: " webhook created"
         })
         getWebhooks()
-      } else {
-        setNewWebhookStatus({
-          value: status.values.error,
-          message: res.status + " Error - " + res.statusText
-        })
       }
-    }).catch(err => {
-      setNewWebhookStatus({
-        value: status.values.error,
-        message: (err.response && err.response.statusText) ? err.response.statusText : err.message
-      })
     })
   }
   const deleteWebhook = (index) => {
@@ -119,16 +123,24 @@ const WebhooksPage = () => {
       value: status.values.active,
       message: "Deleting webhook " + webhooks[index].gid
     })
-    axios({
+    
+    let body = {
+      user: "TMP",
+      endpoint: "webhooks/" + webhooks[index].gid,
       method: "DELETE",
-      url: "https://app.asana.com/api/1.0/webhooks/" + webhooks[index].gid,
-      headers: {
-        Authorization: process.env.NEXT_PUBLIC_ASANA_TOKEN,
-        "Content-Type": "application/json; charset=utf-8",
-      },
-      data: newWebhook
+      params: {}
+    }
+    fetchJson("api/asana", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
     }).then(res => {
-      if (res.status === 200) {
+      if (res.error) {
+        setMessageStatus({
+          value: status.values.error,
+          message: res.error
+        })
+      } else {
         setMessageStatus({
           value: status.values.completed,
           message: "Webhook " + webhooks[index].gid + " deleted"
@@ -136,18 +148,7 @@ const WebhooksPage = () => {
         var temp = [...webhooks];
         temp.splice(index, 1);
         setWebhooks(temp);
-        // setMessageStatus({ value: status.values.completed })
-      } else {
-        setMessageStatus({
-          value: status.values.error,
-          message: res.status + " Error - " + res.statusText
-        })
       }
-    }).catch(err => {
-      setMessageStatus({
-        value: status.values.error,
-        message: (err.response && err.response.statusText) ? err.response.statusText : err.message
-      })
     })
   }
   const getWebhooks = () => {
@@ -156,35 +157,31 @@ const WebhooksPage = () => {
       message: "Retrieving Webhooks"
     })
     setWebhooks([])
-    axios({
+    let body = {
+      user: "TMP",
+      endpoint: "webhooks",
       method: "GET",
-      url: "https://app.asana.com/api/1.0/webhooks",
       params: {
-        workspace: selectedWorkspace.gid
-      },
-      headers: {
-        Authorization: process.env.NEXT_PUBLIC_ASANA_TOKEN,
-        "Content-Type": "application/json; charset=utf-8",
+        "workspace": "911014280884666"
       }
+    }
+    fetchJson("api/asana", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
     }).then(res => {
-      if (res.status === 200) {
-        setWebhooks(res.data.data)
-        setMessageStatus({
-          value: status.values.completed,
-          message: res.data.data.length + " webhooks retrieved"
-        })
-      } else {
+      if (res.error) {
         setMessageStatus({
           value: status.values.error,
-          message: res.status + " Error - " + res.data
+          message: res.error
+        })
+      } else {
+        setWebhooks(res.data)
+        setMessageStatus({
+          value: status.values.completed,
+          message: res.data.length + " webhooks retrieved"
         })
       }
-    }).catch(err => {
-      console.log(err)
-      setMessageStatus({
-        value: status.values.error,
-        message: err.message
-      })
     })
   }
   const clearWebhooksStatus = () => {
@@ -204,37 +201,34 @@ const WebhooksPage = () => {
       value: status.values.active,
       message: "Retrieving Workspaces"
     })
-
-    axios({
+    setMessageStatus({
+      value: status.values.active,
+      message: "Retrieving Webhooks"
+    })
+    setWebhooks([])
+    let body = {
+      user: "TMP",
+      endpoint: "workspaces",
       method: "GET",
-      url: "https://app.asana.com/api/1.0/workspaces",
-      headers: {
-        Authorization: process.env.NEXT_PUBLIC_ASANA_TOKEN,
-        "Content-Type": "application/json; charset=utf-8",
-      }
+      params: {}
+    }
+    fetchJson("api/asana", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
     }).then(res => {
-      if (res.status === 200) {
-        setWorkspaces(res.data.data)
-        setMessageStatus({
-          value: status.values.completed,
-          message: res.data.data.length + " workspaces retrieved"
-        })
-        if (res.data.data.length > 0) {
-          setSelectedWorkspace(res.data.data[0])
-          // console.log(res.data.data[0])
-          // getWebhooks()
-        }
-      } else {
+      if (res.error) {
         setMessageStatus({
           value: status.values.error,
-          message: res.status + " Error - " + res.data
+          message: res.error
+        })
+      } else {
+        setWorkspaces(res.data)
+        setMessageStatus({
+          value: status.values.completed,
+          message: res.data.length + " workspaces retrieved"
         })
       }
-    }).catch(err => {
-      setMessageStatus({
-        value: status.values.error,
-        message: err.message
-      })
     })
   }
   const handleJSONInputChange = (e) => {
@@ -361,7 +355,7 @@ const WebhooksPage = () => {
   const getWorkspacesNames = () => {
     let workspacesNames = []
     workspaces.map((workspace) => {
-      workspacesNames.push(selectedWorkspace.name)
+      workspacesNames.push(workspace.name)
     })
     return workspacesNames
   }
