@@ -41,6 +41,8 @@ Run development locally:
 npm run dev
 ```
 
+ ### Build Locally
+
 Build locally:
 
 ```batch
@@ -53,6 +55,8 @@ Start prod locally:
 npm run start
 ```
 
+### Deploy to Vercel
+
 Deploy to Vercel in preview:
 
 ```batch
@@ -64,10 +68,6 @@ Deploy to Vercel in production:
 ```batch
 vercel --prod
 ```
-
-## Build & Deploy
-
-_Not yet in operation._
 
 ## Dependencies
 
