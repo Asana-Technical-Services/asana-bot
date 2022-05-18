@@ -13,8 +13,8 @@ export default async function asanaAPI(req, res) {
   } else {
     try {
       // generate random ID to send
-      webhookCode = randomUUID();
-      targetUrl = new URL(data.data.target);
+      let webhookCode = randomUUID();
+      let targetUrl = new URL(data.data.target);
       if (targetUrl.search) {
         targetUrl.search = targetUrl.search + `&webhookCode=${webhookCode}`;
       } else {

@@ -60,7 +60,7 @@ module.exports = async (req, res) => {
       };
     });
 
-    putWebhookEventParams = {
+    let putWebhookEventParams = {
       RequestItems: {
         WebhookCodeToGidXref: requestItems,
       },
