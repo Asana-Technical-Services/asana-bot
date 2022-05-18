@@ -15,9 +15,9 @@ module.exports = async (req, res) => {
     console.log(req.query);
     res.send("🤖 at work *beep!*");
   } else {
-    let requestUrl = new URL(req.url, `http://${req.getHeaders().host}`);
-
-    let webhookCode = requestUrl.searchParams.get("webhookCode");
+    const {
+      query: { webhookCode },
+    } = req;
 
     const webhookXrefTable = new DynamoDB.DocumentClient({
       accessKeyId: process.env.NEXT_AWS_ACCESS_KEY_ID,
