@@ -27,8 +27,8 @@ const sampleWebhook = {
         resource_type: "task",
       },
     ],
-    resource: "1130757427412039",
-    target: "https://asana-bot.vercel.app/api/webhooks",
+    resource: "1201932030662452",
+    target: "https://asana-bot-oauth.vercel.app/api/webhooks",
   },
 };
 

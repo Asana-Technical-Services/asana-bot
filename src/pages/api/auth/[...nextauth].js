@@ -135,7 +135,7 @@ async function refreshAccessToken(token) {
         grant_type: "refresh_token",
         client_id: process.env.NEXT_CLIENT_ID,
         client_secret: process.env.NEXT_CLIENT_SECRET,
-        redirect_uri: process.env.NEXTAUTH_URL + "api/auth/asana",
+        redirect_uri: process.env.NEXTAUTH_URL + "api/auth/callback/asana",
         code: token.refresh_token,
         refresh_token: token.refresh_token,
       });

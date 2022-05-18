@@ -18,10 +18,7 @@ export default function MyApp({ Component, pageProps }) {
 
 function Auth({ children }) {
   const { data: session, status } = useSession({ required: true });
-  console.log("auth:");
 
-  console.log(session);
-  console.log(status);
   if (status === "loading") {
     return <div>Loading...</div>;
   }

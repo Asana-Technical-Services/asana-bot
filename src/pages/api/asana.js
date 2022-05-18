@@ -14,14 +14,27 @@ export default async function asanaAPI(req, res) {
     try {
       // generate random ID to send
       let webhookCode = randomUUID();
-      let targetUrl = new URL(data.data.target);
+      console.log(data);
+      let targetUrl = new URL(data.data.data.target);
+      console.log(targetUrl);
       if (targetUrl.search) {
-        targetUrl.search = targetUrl.search + `&webhookCode=${webhookCode}`;
+        data.data.target =
+          data.data.data.target + `&webhookCode=${webhookCode}`;
       } else {
-        targetUrl.search = `?webhookCode=${webhookCode}`;
+        data.data.data.target =
+          data.data.data.target + `?webhookCode=${webhookCode}`;
       }
 
-      data.data.target = targetUrl.toString();
+      console.log({
+        method: data.method,
+        url: "https://app.asana.com/api/1.0/" + data.endpoint,
+        params: data.params,
+        headers: {
+          authorization: `Bearer ${session.access_token}`,
+          "Content-Type": "application/json; charset=utf-8",
+        },
+        data: data.data,
+      });
 
       let response = await axios({
         method: data.method,
@@ -33,12 +46,15 @@ export default async function asanaAPI(req, res) {
         },
         data: data.data,
       });
+
+      console.log(response.data);
+
       if (response.status === 200 || response.status === 201) {
         // make request to dynamo DB to set webhook -> code
 
         const webhookXrefTable = new DynamoDB.DocumentClient({
           accessKeyId: process.env.NEXT_AWS_ACCESS_KEY_ID,
-          secretAccessKey: NEXT_AWS_SECRET_ACCESS_KEY,
+          secretAccessKey: process.env.NEXT_AWS_SECRET_ACCESS_KEY,
           region: "us-east-1",
         });
 
@@ -46,18 +62,16 @@ export default async function asanaAPI(req, res) {
           TableName: "WebhookCodeToGidXref",
           Item: {
             webhookCode: webhookCode,
-            gid: resoponse.data.data.gid,
+            gid: response.data.data.gid,
           },
         };
 
-        webhookXrefTable.put(params, function (err, data) {
-          if (err) {
-            console.log(err);
-            res.json({ error: response.status + " Error - " + err });
-          } else {
-            res.send(response.data);
-          }
-        });
+        console.log(params);
+
+        let result = await webhookXrefTable.put(params).promise();
+
+        console.log(result);
+        res.send(result);
       } else {
         res.json({ error: response.status + " Error - " + response.data });
       }
@@ -70,7 +84,7 @@ export default async function asanaAPI(req, res) {
       url: "https://app.asana.com/api/1.0/" + data.endpoint,
       params: data.params,
       headers: {
-        Authorization: process.env.ASANA_TOKEN,
+        authorization: `Bearer ${session.access_token}`,
         "Content-Type": "application/json; charset=utf-8",
       },
       data: data.data,
