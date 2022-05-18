@@ -64,7 +64,7 @@ module.exports = async (req, res) => {
     };
 
     let putWebhookEventsResult = await webhookXrefTable
-      .batchWriteItem(putWebhookEventParams)
+      .batchWrite(putWebhookEventParams)
       .promise();
     console.log(putWebhookEventsResult);
 
