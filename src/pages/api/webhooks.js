@@ -36,7 +36,7 @@ module.exports = async (req, res) => {
 
     console.log(webhookGidResult);
 
-    let webhookGid = webhookGidResult.gid;
+    let webhookGid = webhookGidResult.Item.gid;
 
     // Go through events
     const { body } = req;
@@ -51,15 +51,18 @@ module.exports = async (req, res) => {
           Item: {
             ...e,
             webhookgid: webhookGid,
+            Date: Date.now().toString(),
             GidDate: webhookGid + e.created_at + dex.toString(),
           },
         },
       };
     });
 
+    console.log(requestItems[0].PutRequest.Item);
+
     let putWebhookEventParams = {
       RequestItems: {
-        WebhookCodeToGidXref: requestItems,
+        WebhookHistoryLog: requestItems,
       },
     };
 
