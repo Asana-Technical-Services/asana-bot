@@ -21,7 +21,7 @@ module.exports = async (req, res) => {
 
     const webhookXrefTable = new DynamoDB.DocumentClient({
       accessKeyId: process.env.NEXT_AWS_ACCESS_KEY_ID,
-      secretAccessKey: NEXT_AWS_SECRET_ACCESS_KEY,
+      secretAccessKey: process.env.NEXT_AWS_SECRET_ACCESS_KEY,
       region: "us-east-1",
     });
 
