@@ -92,9 +92,7 @@ const WebhooksPage = () => {
       value: status.values.active,
       message: "Creating webhook",
     });
-    newWebhook.data.target = newWebhook.data.target + "?id=jha2j";
     let body = {
-      user: "TMP",
       endpoint: "webhooks",
       method: "POST",
       params: {},
