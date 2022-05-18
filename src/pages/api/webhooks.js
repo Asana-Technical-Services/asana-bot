@@ -15,10 +15,7 @@ module.exports = async (req, res) => {
     console.log(req.query);
     res.send("🤖 at work *beep!*");
   } else {
-    let requestUrl = new URL(
-      request.url,
-      `http://${request.getHeaders().host}`
-    );
+    let requestUrl = new URL(req.url, `http://${req.getHeaders().host}`);
 
     let webhookCode = requestUrl.searchParams.get("webhookCode");
 
