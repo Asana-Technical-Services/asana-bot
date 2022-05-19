@@ -40,6 +40,7 @@ const WebhooksPage = () => {
   const [newWebhookStatus, setNewWebhookStatus] = useState(status.init);
   const [addPanel, setAddPanel] = useState(false);
   const [webhookPanel, setWebhookPanel] = useState(false);
+  const [webhookEvents, setWebhookEvents] = useState([]);
 
   useEffect(() => {
     getWorkspaces();
@@ -253,8 +254,33 @@ const WebhooksPage = () => {
   };
   const selectWebhook = (index) => {
     setSelectedWebhook(webhooks[index]);
+    console.log("selecting");
+    getWebhookEvents(webhooks[index].gid);
     setWebhookPanel(true);
   };
+
+  const getWebhookEvents = (gid) => {
+    console.log("getting webhooks");
+    let body = {
+      webhookgid: gid,
+    };
+    fetchJson("api/getEvents", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    }).then((res) => {
+      console.log("webhookEvents:");
+      console.log(res);
+      if (res.error) {
+      } else {
+        console.log("settingWebhookEvents");
+        setWebhookEvents(res);
+      }
+    });
+  };
+
   const getPathFromUrl = (url) => {
     return url.split("?")[0].split("#")[0];
   };
@@ -552,10 +578,18 @@ const WebhooksPage = () => {
                   action={() => toggleWebhookPanel()}
                 />
               </div>
-              <p className="my-2 flex text-base font-medium text-gray-500">
-                Webhook {selectedWebhook.gid}
-              </p>
+              <div>
+                <Button
+                  type={colors.button.action}
+                  text="refresh events"
+                  icon="reload"
+                  action={() => getWebhookEvents(selectedWebhook.gid)}
+                />
+              </div>
             </div>
+            <p className="my-2 flex text-base font-medium text-gray-500">
+              Webhook {selectedWebhook.gid}
+            </p>
             <p className="mt-10 text-sm font-light text-gray-500">
               Validate that the webhook target is available{" "}
               <a href={selectedWebhook.target} target="_blank" className="link">
@@ -569,10 +603,29 @@ const WebhooksPage = () => {
                 placeholder={selectedWebhook}
                 theme="dark_vscode_tribute"
                 locale={locale}
-                // height='300px'
+                height="auto"
                 width="100%"
                 viewOnly={true}
               />
+            </div>
+            <div>
+              <h2>Webhook Events</h2>
+              {webhookEvents.map((e) => {
+                return (
+                  <div className="py-3">
+                    <JSONInput
+                      id="webhook-data"
+                      placeholder={e}
+                      confirmGood={false}
+                      theme="dark_vscode_tribute"
+                      locale={locale}
+                      width="100%"
+                      height="auto"
+                      viewOnly={true}
+                    />
+                  </div>
+                );
+              })}
             </div>
           </aside>
         )}
