@@ -374,6 +374,9 @@ const WebhooksPage = () => {
     setAddPanel(!addPanel);
   };
   const toggleWebhookPanel = () => {
+    if (webhookPanel) {
+      setWebhookEvents([]);
+    }
     setWebhookPanel(!webhookPanel);
   };
 
@@ -430,7 +433,9 @@ const WebhooksPage = () => {
           <div className="flex items-center justify-between">
             <div className="flex-1 min-w-0 py-20">
               <p className="text-2xl leading-7 text-gray-700 sm:text-3xl sm:truncate">
-                Connected Webhooks
+                {!!selectedWorkspace?.gid
+                  ? "Connected Webhooks"
+                  : "Select a Workspace:"}
               </p>
               {renderMessage(messageStatus)}
             </div>
@@ -444,13 +449,15 @@ const WebhooksPage = () => {
                   selectWorkspace(workspace);
                 }}
               />
-              <Button
-                type={colors.button.action}
-                text="Reload"
-                icon="reload"
-                action={() => getWebhooks()}
-              />
-              {!addPanel && (
+              {!!selectedWorkspace?.gid && (
+                <Button
+                  type={colors.button.action}
+                  text="Reload"
+                  icon="reload"
+                  action={() => getWebhooks()}
+                />
+              )}
+              {!!selectedWorkspace?.gid && !addPanel && (
                 <Button
                   type={colors.button.success}
                   text="Add"
@@ -520,7 +527,7 @@ const WebhooksPage = () => {
           </div>
         </div>
         {addPanel && (
-          <aside className="bg-white shadow-md z-40 px-10 py-20 w-1/2 min-h-screen flex flex-col">
+          <aside className="absolute right-0 bg-white shadow-md z-40 px-10 py-20 w-1/2 h-screen flex flex-col">
             <div className="flex justify-between py-3">
               <div className="">
                 <Button
@@ -568,7 +575,7 @@ const WebhooksPage = () => {
           </aside>
         )}
         {webhookPanel && (
-          <aside className="bg-white shadow-md z-40 px-10 py-20 w-1/2 min-h-screen flex flex-col">
+          <aside className=" absolute right-0 bg-white shadow-md z-40 px-10 py-20 w-1/2 min-h-screen flex flex-col">
             <div className="flex justify-between py-3">
               <div className="">
                 <Button
@@ -609,23 +616,25 @@ const WebhooksPage = () => {
               />
             </div>
             <div>
-              <h2>Webhook Events</h2>
-              {webhookEvents.map((e) => {
-                return (
-                  <div className="py-3">
-                    <JSONInput
-                      id="webhook-data"
-                      placeholder={e}
-                      confirmGood={false}
-                      theme="dark_vscode_tribute"
-                      locale={locale}
-                      width="100%"
-                      height="auto"
-                      viewOnly={true}
-                    />
-                  </div>
-                );
-              })}
+              <p className="text-lg text-gray-500">Webhook Events</p>
+              <div className="h-auto overflow-y-scroll overflow-x-none">
+                {webhookEvents.map((e) => {
+                  return (
+                    <div className="py-3">
+                      <JSONInput
+                        id="webhook-data"
+                        placeholder={e}
+                        confirmGood={false}
+                        theme="dark_vscode_tribute"
+                        locale={locale}
+                        width="100%"
+                        height="auto"
+                        viewOnly={true}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </aside>
         )}
