@@ -309,13 +309,7 @@ const WebhooksPage = () => {
     return (
       <tr key="index">
         <td className="px-6 py-4 whitespace-nowrap">
-          <a
-            href="#"
-            className="text-sm text-gray-500 hover:text-gray-700"
-            onClick={() => selectWebhook(index)}
-          >
-            {data.gid}
-          </a>
+          <span className="text-sm text-gray-700">{data.gid}</span>
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
           <span className={resourcePillClass}>
@@ -339,6 +333,15 @@ const WebhooksPage = () => {
           <div className="text-sm text-gray-500">
             {getPathFromUrl(data.target)}
           </div>
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap">
+          <a
+            href="#"
+            className="text-sm text-blue-500 hover:text-blue-700"
+            onClick={() => selectWebhook(index)}
+          >
+            Show Events
+          </a>
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
           <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
