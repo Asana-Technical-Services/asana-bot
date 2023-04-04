@@ -1,22 +1,20 @@
-import React, { useState, useEffect } from "react"
-import JSONInput from 'react-json-editor-ajrm';
-import locale from 'react-json-editor-ajrm/locale/en';
-import status from "/src/lib/status"
-import colors from "/src/lib/colors"
-import Button from "/src/components/button"
-import Dropdown from "/src/components/dropdown"
-import Icon from "/src/components/icon"
-import axios from 'axios'
-import useUser from "/src/lib/useUser";
+import React, { useState, useEffect } from "react";
+import JSONInput from "react-json-editor-ajrm";
+import locale from "react-json-editor-ajrm/locale/en";
+import status from "/src/lib/status";
+import colors from "/src/lib/colors";
+import Button from "/src/components/button";
+import Dropdown from "/src/components/dropdown";
+import { signIn, signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import fetchJson, { FetchError } from "/src/lib/fetchJson"
+import fetchJson, { FetchError } from "/src/lib/fetchJson";
 
 const sampleWebhook = {
-  "data": {
-    "filters": [
+  data: {
+    filters: [
       {
-        "action": "changed",
-        "fields": [
+        action: "changed",
+        fields: [
           "assignee",
           "completed",
           "completed_by",
@@ -24,246 +22,300 @@ const sampleWebhook = {
           "dependencies",
           "custom_fields",
           "parent",
-          "resource_subtype"
+          "resource_subtype",
         ],
-        "resource_type": "task"
-      }
+        resource_type: "task",
+      },
     ],
-    "resource": "1130757427412039",
-    "target": "https://asana-bot.vercel.app/api/webhooks"
-  }
-}
+    resource: "1201932030662452",
+    target: "https://asana-bot-oauth.vercel.app/api/webhooks",
+  },
+};
 
 const WebhooksPage = () => {
+  const [webhooks, setWebhooks] = useState([]);
+  const [newWebhook, setNewWebhook] = useState(sampleWebhook);
+  const [selectedWebhook, setSelectedWebhook] = useState({});
+  const [messageStatus, setMessageStatus] = useState(status.init);
+  const [newWebhookStatus, setNewWebhookStatus] = useState(status.init);
+  const [addPanel, setAddPanel] = useState(false);
+  const [webhookPanel, setWebhookPanel] = useState(false);
+  const [webhookEvents, setWebhookEvents] = useState([]);
+
   useEffect(() => {
-    getWorkspaces()
+    getWorkspaces();
   }, []);
-  const { user, mutateUser } = useUser();
+
   const router = useRouter();
-  const [workspaces, setWorkspaces] = useState([])
+  const [workspaces, setWorkspaces] = useState([]);
   // useEffect(() => {
   // }, [workspaces]);
-  const [selectedWorkspace, setSelectedWorkspace] = useState({})
+  const [selectedWorkspace, setSelectedWorkspace] = useState({});
   useEffect(() => {
     if (selectedWorkspace.gid) {
-      getWebhooks()
+      getWebhooks();
     }
   }, [selectedWorkspace]);
-  const [webhooks, setWebhooks] = useState([])
-  const [newWebhook, setNewWebhook] = useState(sampleWebhook)
-  const [selectedWebhook, setSelectedWebhook] = useState({})
-  const [messageStatus, setMessageStatus] = useState(status.init)
-  const [newWebhookStatus, setNewWebhookStatus] = useState(status.init)
-  const [addPanel, setAddPanel] = useState(false)
-  const [webhookPanel, setWebhookPanel] = useState(false)
   useEffect(() => {
     if (addPanel) {
-      setNewWebhookStatus(status.init)
-      setWebhookPanel(false)
+      setNewWebhookStatus(status.init);
+      setWebhookPanel(false);
     }
   }, [addPanel]);
   useEffect(() => {
     if (webhookPanel) {
-      setAddPanel(false)
+      setAddPanel(false);
     }
   }, [webhookPanel]);
   // var newWebhookData = sampleWebhook
   const scrollToTop = () => {
     window.scrollTo(0, 0);
-  }
+  };
+
   const confirmAdd = () => {
     if (window.confirm("Confirm you want to create a new webhook")) {
-      addWebhook()
+      addWebhook();
     }
-  }
+  };
+
   const confirmDelete = (index) => {
-    if (window.confirm("Confirm you want to delete webhook " + webhooks[index].gid)) {
-      deleteWebhook(index)
+    if (
+      window.confirm(
+        "Confirm you want to delete webhook " + webhooks[index].gid
+      )
+    ) {
+      deleteWebhook(index);
     }
-  }
+  };
+
   const addWebhook = () => {
     setNewWebhookStatus({
       value: status.values.active,
-      message: "Creating webhook"
-    })
-    newWebhook.data.target = newWebhook.data.target + "?id=jha2j"
+      message: "Creating webhook",
+    });
     let body = {
-      user: "TMP",
       endpoint: "webhooks",
       method: "POST",
       params: {},
-      data: newWebhook
-    }
+      data: newWebhook,
+    };
     fetchJson("api/asana", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(body),
-    }).then(res => {
+    }).then((res) => {
       if (res.error) {
         setMessageStatus({
           value: status.values.error,
-          message: res.error
-        })
+          message: res.error,
+        });
         setNewWebhookStatus({
           value: status.values.completed,
-          message: " webhook not created"
-        })
+          message: " webhook not created",
+        });
       } else {
         setNewWebhookStatus({
           value: status.values.completed,
-          message: " webhook created"
-        })
-        getWebhooks()
+          message: " webhook created",
+        });
+        getWebhooks();
       }
-    })
-  }
+    });
+  };
+
   const deleteWebhook = (index) => {
-    scrollToTop()
+    scrollToTop();
     setMessageStatus({
       value: status.values.active,
-      message: "Deleting webhook " + webhooks[index].gid
-    })
-    
+      message: "Deleting webhook " + webhooks[index].gid,
+    });
+
     let body = {
       user: "TMP",
       endpoint: "webhooks/" + webhooks[index].gid,
       method: "DELETE",
-      params: {}
-    }
+      params: {},
+    };
     fetchJson("api/asana", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(body),
-    }).then(res => {
+    }).then((res) => {
       if (res.error) {
         setMessageStatus({
           value: status.values.error,
-          message: res.error
-        })
+          message: res.error,
+        });
       } else {
         setMessageStatus({
           value: status.values.completed,
-          message: "Webhook " + webhooks[index].gid + " deleted"
-        })
+          message: "Webhook " + webhooks[index].gid + " deleted",
+        });
         var temp = [...webhooks];
         temp.splice(index, 1);
         setWebhooks(temp);
       }
-    })
-  }
+    });
+  };
+
   const getWebhooks = () => {
     setMessageStatus({
       value: status.values.active,
-      message: "Retrieving Webhooks"
-    })
-    setWebhooks([])
+      message: "Retrieving Webhooks",
+    });
+    setWebhooks([]);
     let body = {
       user: "TMP",
       endpoint: "webhooks",
       method: "GET",
       params: {
-        "workspace": "911014280884666"
-      }
-    }
+        workspace: selectedWorkspace.gid,
+      },
+    };
     fetchJson("api/asana", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(body),
-    }).then(res => {
+    }).then((res) => {
       if (res.error) {
         setMessageStatus({
           value: status.values.error,
-          message: res.error
-        })
+          message: res.error,
+        });
       } else {
-        setWebhooks(res.data)
+        setWebhooks(res.data);
         setMessageStatus({
           value: status.values.completed,
-          message: res.data.length + " webhooks retrieved"
-        })
+          message: res.data.length + " webhooks retrieved",
+        });
       }
-    })
-  }
+    });
+  };
+
   const clearWebhooksStatus = () => {
     setMessageStatus({
       value: status.values.clear,
-      message: ""
-    })
-  }
+      message: "",
+    });
+  };
+
   const clearNewWebhookStatus = () => {
     setNewWebhookStatus({
       value: status.values.clear,
-      message: ""
-    })
-  }
+      message: "",
+    });
+  };
+
   const getWorkspaces = () => {
     setMessageStatus({
       value: status.values.active,
-      message: "Retrieving Workspaces"
-    })
+      message: "Retrieving Workspaces",
+    });
     setMessageStatus({
       value: status.values.active,
-      message: "Retrieving Webhooks"
-    })
-    setWebhooks([])
+      message: "Retrieving Webhooks",
+    });
+    setWebhooks([]);
     let body = {
       user: "TMP",
       endpoint: "workspaces",
       method: "GET",
-      params: {}
-    }
+      params: {},
+    };
     fetchJson("api/asana", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(body),
-    }).then(res => {
+    }).then((res) => {
       if (res.error) {
         setMessageStatus({
           value: status.values.error,
-          message: res.error
-        })
+          message: res.error,
+        });
       } else {
-        setWorkspaces(res.data)
+        setWorkspaces(res.data);
         setMessageStatus({
           value: status.values.completed,
-          message: res.data.length + " workspaces retrieved"
-        })
+          message: res.data.length + " workspaces retrieved",
+        });
       }
-    })
-  }
+    });
+  };
   const handleJSONInputChange = (e) => {
-    setNewWebhook(e.jsObject)
-  }
+    setNewWebhook(e.jsObject);
+  };
   const selectWebhook = (index) => {
-    setSelectedWebhook(webhooks[index])
-    setWebhookPanel(true)
-  }
+    setSelectedWebhook(webhooks[index]);
+    console.log("selecting");
+    getWebhookEvents(webhooks[index].gid);
+    setWebhookPanel(true);
+  };
+
+  const getWebhookEvents = (gid) => {
+    console.log("getting webhooks");
+    let body = {
+      webhookgid: gid,
+    };
+    fetchJson("api/getEvents", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    }).then((res) => {
+      console.log("webhookEvents:");
+      console.log(res);
+      if (res.error) {
+      } else {
+        console.log("settingWebhookEvents");
+        setWebhookEvents(res);
+      }
+    });
+  };
+
   const getPathFromUrl = (url) => {
     return url.split("?")[0].split("#")[0];
-  }
+  };
   const renderWebhook = (data, index) => {
-    const pillClass = "px-2 inline-flex text-xs leading-5 font-semibold rounded-full "
-    let resourceColor = "gray"
+    const pillClass =
+      "px-2 inline-flex text-xs leading-5 font-semibold rounded-full ";
+    let resourceColor = "gray";
     switch (data.resource.resource_type) {
       case "task":
-        resourceColor = "pink"
-        break
+        resourceColor = "pink";
+        break;
       case "project":
-        resourceColor = "indigo"
-        break
+        resourceColor = "indigo";
+        break;
       case "portfolio":
-        resourceColor = "purple"
-        break
+        resourceColor = "purple";
+        break;
       default:
-        break
+        break;
     }
-    const activeColor = data.resource.active ? "green" : "yellow"
-    const resourcePillClass = pillClass + "bg-" + resourceColor + "-100 text-" + resourceColor + "-800"
-    const statusPillClass = pillClass + "bg-" + activeColor + "-100 text-" + activeColor + "-800"
+    const activeColor = data.resource.active ? "green" : "yellow";
+    const resourcePillClass =
+      pillClass + "bg-" + resourceColor + "-100 text-" + resourceColor + "-800";
+    const statusPillClass =
+      pillClass + "bg-" + activeColor + "-100 text-" + activeColor + "-800";
     return (
       <tr key="index">
         <td className="px-6 py-4 whitespace-nowrap">
-          <a href="#" className="text-sm text-gray-500 hover:text-gray-700" onClick={() => selectWebhook(index)}>{data.gid}</a>
+          <a
+            href="#"
+            className="text-sm text-gray-500 hover:text-gray-700"
+            onClick={() => selectWebhook(index)}
+          >
+            {data.gid}
+          </a>
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
           <span className={resourcePillClass}>
@@ -284,7 +336,9 @@ const WebhooksPage = () => {
           </div>
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
-          <div className="text-sm text-gray-500">{getPathFromUrl(data.target)}</div>
+          <div className="text-sm text-gray-500">
+            {getPathFromUrl(data.target)}
+          </div>
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
           <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
@@ -292,11 +346,17 @@ const WebhooksPage = () => {
           </span>
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-          <a href="#" className="text-red-500 hover:text-red-700" onClick={() => deleteWebhook(index)}>Delete</a>
+          <a
+            href="#"
+            className="text-red-500 hover:text-red-700"
+            onClick={() => deleteWebhook(index)}
+          >
+            Delete
+          </a>
         </td>
       </tr>
-    )
-  }
+    );
+  };
   const renderInput = (data, id, edit) => {
     return (
       <JSONInput
@@ -305,39 +365,35 @@ const WebhooksPage = () => {
         theme="dark_vscode_tribute"
         locale={locale}
         // height='300px'
-        width='100%'
+        width="100%"
         onChange={handleJSONInputChange}
       />
-    )
-  }
-  const toggleAddPanel = () => {
-    setAddPanel(!addPanel)
-  }
-  const toggleWebhookPanel = () => {
-    setWebhookPanel(!webhookPanel)
-  }
-
-  const logOut = () => {
-    mutateUser(
-      fetchJson("/api/logout", { method: "POST" }),
-      false,
     );
-    router.push("/");
-  }
+  };
+  const toggleAddPanel = () => {
+    setAddPanel(!addPanel);
+  };
+  const toggleWebhookPanel = () => {
+    if (webhookPanel) {
+      setWebhookEvents([]);
+    }
+    setWebhookPanel(!webhookPanel);
+  };
 
   const renderMessage = (statusMessage) => {
-    const messageStatus = statusMessage.value
-    const color = status.getColor(messageStatus)
-    const topClass = "mt-1 flex flex-col sm:flex-row sm:flex-wrap sm:mt-0 sm:space-x-6"
-    const subClass = "mt-2 flex items-center text-sm text-" + color + "-400"
+    const messageStatus = statusMessage.value;
+    const color = status.getColor(messageStatus);
+    const topClass =
+      "mt-1 flex flex-col sm:flex-row sm:flex-wrap sm:mt-0 sm:space-x-6";
+    const subClass = "mt-2 flex items-center text-sm text-" + color + "-400";
 
-    let messageIcon = "hash"
+    let messageIcon = "hash";
     switch (messageStatus) {
       case status.values.active:
-        messageIcon = "clock"
+        messageIcon = "clock";
         break;
       case status.values.error:
-        messageIcon = "error"
+        messageIcon = "error";
         break;
       default:
         break;
@@ -350,21 +406,23 @@ const WebhooksPage = () => {
           {statusMessage.message}
         </div>
       </div>
-    )
-  }
+    );
+  };
   const getWorkspacesNames = () => {
-    let workspacesNames = []
+    let workspacesNames = [];
     workspaces.map((workspace) => {
-      workspacesNames.push(workspace.name)
-    })
-    return workspacesNames
-  }
+      workspacesNames.push(workspace.name);
+    });
+    return workspacesNames;
+  };
   const selectWorkspace = (name) => {
-    let workspaceResult = workspaces.find(workspaceItem => workspaceItem.name == name)
+    let workspaceResult = workspaces.find(
+      (workspaceItem) => workspaceItem.name == name
+    );
     if (workspaceResult.gid) {
-      setSelectedWorkspace(workspaceResult)
+      setSelectedWorkspace(workspaceResult);
     }
-  }
+  };
 
   return (
     <div>
@@ -375,17 +433,44 @@ const WebhooksPage = () => {
           <div className="flex items-center justify-between">
             <div className="flex-1 min-w-0 py-20">
               <p className="text-2xl leading-7 text-gray-700 sm:text-3xl sm:truncate">
-                Connected Webhooks
+                {!!selectedWorkspace?.gid
+                  ? "Connected Webhooks"
+                  : "Select a Workspace:"}
               </p>
               {renderMessage(messageStatus)}
             </div>
             <div className="mt-5 flex lg:mt-0 lg:ml-4">
-              <Dropdown title={selectedWorkspace.gid ? selectedWorkspace.name : "Workspaces"} items={getWorkspacesNames()} action={(workspace) => { selectWorkspace(workspace) }} />
-              <Button type={colors.button.action} text="Reload" icon="reload" action={() => getWebhooks()} />
-              {!addPanel && (
-                <Button type={colors.button.success} text="Add" icon="add" action={() => toggleAddPanel()} />
+              <Dropdown
+                title={
+                  selectedWorkspace.gid ? selectedWorkspace.name : "Workspaces"
+                }
+                items={getWorkspacesNames()}
+                action={(workspace) => {
+                  selectWorkspace(workspace);
+                }}
+              />
+              {!!selectedWorkspace?.gid && (
+                <Button
+                  type={colors.button.action}
+                  text="Reload"
+                  icon="reload"
+                  action={() => getWebhooks()}
+                />
               )}
-              <Button type={colors.button.secondary} text="Log out" icon="logout" action={() => logOut()} />
+              {!!selectedWorkspace?.gid && !addPanel && (
+                <Button
+                  type={colors.button.success}
+                  text="Add"
+                  icon="add"
+                  action={() => toggleAddPanel()}
+                />
+              )}
+              <Button
+                type={colors.button.secondary}
+                text="Log out"
+                icon="logout"
+                action={() => signOut({ callbackUrl: "/" })}
+              />
             </div>
           </div>
           <div className="flex flex-col">
@@ -395,19 +480,34 @@ const WebhooksPage = () => {
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
                           GID
                         </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
                           Resource
                         </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
                           Name
                         </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
                           Target
                         </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
                           Status
                         </th>
                         <th scope="col" className="relative px-6 py-3">
@@ -416,7 +516,9 @@ const WebhooksPage = () => {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {webhooks.map((webhook, index) => renderWebhook(webhook, index))}
+                      {webhooks.map((webhook, index) =>
+                        renderWebhook(webhook, index)
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -425,17 +527,30 @@ const WebhooksPage = () => {
           </div>
         </div>
         {addPanel && (
-          <aside className="bg-white shadow-md z-40 px-10 py-20 w-1/2 min-h-screen flex flex-col">
+          <aside className="absolute right-0 bg-white shadow-md z-40 px-10 py-20 w-1/2 h-screen flex flex-col">
             <div className="flex justify-between py-3">
               <div className="">
-                <Button type={colors.button.secondary} text="Close" icon="close" action={() => toggleAddPanel()} />
+                <Button
+                  type={colors.button.secondary}
+                  text="Close"
+                  icon="close"
+                  action={() => toggleAddPanel()}
+                />
               </div>
               <p className="my-2 flex text-base font-medium text-gray-500">
                 Create a new webhook
               </p>
             </div>
             <p className="mt-10 text-sm font-light text-gray-500">
-              Complete the json bellow to <a href="https://developers.asana.com/docs/webhooks" target="_blank" className="link">create a new webhook</a> in the selected Asana workspace.
+              Complete the json bellow to{" "}
+              <a
+                href="https://developers.asana.com/docs/webhooks"
+                target="_blank"
+                className="link"
+              >
+                create a new webhook
+              </a>{" "}
+              in the selected Asana workspace.
             </p>
             <div className="py-10">
               <JSONInput
@@ -444,28 +559,50 @@ const WebhooksPage = () => {
                 theme="dark_vscode_tribute"
                 locale={locale}
                 // height='300px'
-                width='100%'
+                width="100%"
                 onChange={handleJSONInputChange}
               />
             </div>
             <div className="flex items-center justify-between mt-10">
               {renderMessage(newWebhookStatus)}
-              <Button type={colors.button.success} text="Create" icon="check" action={() => addWebhook()} />
+              <Button
+                type={colors.button.success}
+                text="Create"
+                icon="check"
+                action={() => addWebhook()}
+              />
             </div>
           </aside>
         )}
         {webhookPanel && (
-          <aside className="bg-white shadow-md z-40 px-10 py-20 w-1/2 min-h-screen flex flex-col">
+          <aside className=" absolute right-0 bg-white shadow-md z-40 px-10 py-20 w-1/2 min-h-screen flex flex-col">
             <div className="flex justify-between py-3">
               <div className="">
-                <Button type={colors.button.secondary} text="Close" icon="close" action={() => toggleWebhookPanel()} />
+                <Button
+                  type={colors.button.secondary}
+                  text="Close"
+                  icon="close"
+                  action={() => toggleWebhookPanel()}
+                />
               </div>
-              <p className="my-2 flex text-base font-medium text-gray-500">
-                Webhook {selectedWebhook.gid}
-              </p>
+              <div>
+                <Button
+                  type={colors.button.action}
+                  text="refresh events"
+                  icon="reload"
+                  action={() => getWebhookEvents(selectedWebhook.gid)}
+                />
+              </div>
             </div>
+            <p className="my-2 flex text-base font-medium text-gray-500">
+              Webhook {selectedWebhook.gid}
+            </p>
             <p className="mt-10 text-sm font-light text-gray-500">
-              Validate that the webhook target is available <a href={selectedWebhook.target} target="_blank" className="link">here</a>. Reconnect if status is inactive.
+              Validate that the webhook target is available{" "}
+              <a href={selectedWebhook.target} target="_blank" className="link">
+                here
+              </a>
+              . Reconnect if status is inactive.
             </p>
             <div className="py-10">
               <JSONInput
@@ -473,16 +610,37 @@ const WebhooksPage = () => {
                 placeholder={selectedWebhook}
                 theme="dark_vscode_tribute"
                 locale={locale}
-                // height='300px'
-                width='100%'
+                height="auto"
+                width="100%"
                 viewOnly={true}
               />
+            </div>
+            <div>
+              <p className="text-lg text-gray-500">Webhook Events</p>
+              <div className="h-auto overflow-y-scroll overflow-x-none">
+                {webhookEvents.map((e) => {
+                  return (
+                    <div className="py-3">
+                      <JSONInput
+                        id="webhook-data"
+                        placeholder={e}
+                        confirmGood={false}
+                        theme="dark_vscode_tribute"
+                        locale={locale}
+                        width="100%"
+                        height="auto"
+                        viewOnly={true}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </aside>
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default WebhooksPage
+export default WebhooksPage;
